@@ -1,2 +1,0 @@
-set(robot_serving_MESSAGE_FILES "/home/miguel/catkin_ws/src/robot_serving/msg/Cups.msg;/home/miguel/catkin_ws/src/robot_serving/msg/PMPPoint.msg;/home/miguel/catkin_ws/src/robot_serving/msg/PMPTraj.msg")
-set(robot_serving_SERVICE_FILES "/home/miguel/catkin_ws/src/robot_serving/srv/Movement.srv;/home/miguel/catkin_ws/src/robot_serving/srv/RobotMovementCancelTrajectory.srv;/home/miguel/catkin_ws/src/robot_serving/srv/RobotMovementFeedback.srv;/home/miguel/catkin_ws/src/robot_serving/srv/RobotMovementSendTrajectory.srv")
