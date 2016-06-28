@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: robot_serving
+Description: Description of robot_serving
+Version: 1.0.0
+Cflags: -I/usr/local/include
+Libs: -L/usr/local/lib 
+Requires: roscpp rospy std_msgs message_runtime
