@@ -4,7 +4,7 @@ import argparse
 from Baxter_Movement_Aux.Head_Tracker import HeadTracker
 
 
-def main():
+def head_tracking():
     # Setup parser
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--limb',
@@ -27,4 +27,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    head_tracking()

@@ -41,9 +41,9 @@ class TrajectoryRecorder(object):
         if self._pre_cb is not None:
             self._pre_cb()
 
-        print 'TrajectoryRecorder: record: Starting to record.'
+        print('TrajectoryRecorder: record: Starting to record.')
         traj = self._record_aux()
-        print 'TrajectoryRecorder: record: Finished recording.'
+        print('TrajectoryRecorder: record: Finished recording.')
 
         if self._post_cb is not None:
             self._post_cb()
@@ -51,8 +51,8 @@ class TrajectoryRecorder(object):
         return traj
 
     def _cuff_action(self, value):
-        print 'TrajectoryRecorder: _cuff_action: state changed: %s', str(value)
-	
+        print('TrajectoryRecorder: _cuff_action: state changed: %s', str(value))
+
         if value:
             self._record = value
         else:
@@ -76,10 +76,10 @@ class TrajectoryRecorder(object):
                 pose = limb.endpoint_pose()
                 pose = list(pose['position']) + list(pose['orientation'])
                 tmp_storage += angles + list(pose)
-		
+
             # Current timestamp
             time = rospy.get_time()
-		
+
             # Store it!
             storage.append([time] + tmp_storage)
 

@@ -31,6 +31,7 @@ class HeadTracker(object):
         self._init_state = self._rs.state().enabled
         rospy.loginfo('Enabling Robot')
         self._rs.enable()
+
         # Initializing arm movement variables
         self._track_limb = tracking_limb
         self._endpoint_topics = dict()

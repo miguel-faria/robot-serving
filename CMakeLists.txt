@@ -146,6 +146,14 @@ target_compile_features(movement_manager_mixed_trajectory PRIVATE cxx_range_for)
 add_dependencies(movement_manager_mixed_trajectory ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(movement_manager_mixed_trajectory ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
+######################################
+#### FOR TRAJECTORY RECORDING!!!! ####
+######################################
+add_executable( cup_identification_recording trajectory_recording/cup_identification_recording.cpp ${COLOR_SEGMENTATION_SRC_FILES} )
+target_compile_features(cup_identification_recording PRIVATE cxx_range_for)
+add_dependencies(cup_identification_recording ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(cup_identification_recording ${OpenCV_LIBS} ${catkin_LIBRARIES})
+
 
 ##############################
 #### FOR TESTING ONLY!!!! ####
