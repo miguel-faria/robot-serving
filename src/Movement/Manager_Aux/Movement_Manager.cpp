@@ -33,10 +33,10 @@ namespace movement_decision{
 		_cup_mov_phase.clear();
 	}
 
-	void MovementManager::update_cup_info(string cup_color, Point3f cup_xyz, double point_dist) {
-		_cups_pos.at(cup_color) = cup_xyz;
-		_cups_dist.at(cup_color) = point_dist;
-		_cups_observable.at(cup_color) = true;
+	void MovementManager::update_cup_info(string cup_id, Point3f cup_xyz, double point_dist) {
+		_cups_pos.at(cup_id) = cup_xyz;
+		_cups_dist.at(cup_id) = point_dist;
+		_cups_observable.at(cup_id) = true;
 	}
 
 	bool MovementManager::movement_finished(){

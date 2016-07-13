@@ -109,7 +109,7 @@ class Trajectory(object):
     def initialize_limb(self, limb):
         self._goal = FollowJointTrajectoryGoal()
         self._goal.trajectory.joint_names = [limb + '_' + joint for joint in
-                                             ['s0', 's1', 'e0', 'e1', 'w0', 'w1', 'w2']]
+                                             sorted(['s0', 's1', 'e0', 'e1', 'w0', 'w1', 'w2'])]
 
     def start(self):
         self._goal.trajectory.header.stamp = rospy.Time.now()

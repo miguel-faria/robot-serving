@@ -8,6 +8,7 @@
 #ifndef VISION_PROCESSING_COLOR_SEG_VISION_PROCESSOR_H_
 #define VISION_PROCESSING_COLOR_SEG_VISION_PROCESSOR_H_
 
+#include <Color_Segmentation.h>
 #include <opencv2/core/core.hpp>
 #include <ros/timer.h>
 #include <cmath>
@@ -15,7 +16,6 @@
 #include <vector>
 
 #include "../../../devel/include/robot_serving/Cups.h"
-#include "../../../include/Color_Segmentation.h"
 #include "Camera_Parameters.h"
 #include "Image_Converter.h"
 

@@ -46,6 +46,11 @@ namespace vision_processing_color_seg{
 					string designation;
 					float r11, r12, r13, r21, r22, r23, r31, r32, r33, t1, t2, t3;
 
+					if(!param_file.good()){
+						ROS_ERROR("Camera_Parameters Constructor: Invalid File Name - File does not exist!!");
+						exit(-1);
+					}
+
 					while(getline(param_file, line)){
 
 						if(line.compare("Depth:") == 0){

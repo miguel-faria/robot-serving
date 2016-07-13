@@ -25,8 +25,10 @@ res = robotics.ros.custom.msggen.robot_serving.MovementResponse;
 
 %Connecting to ROS
 disp('Connecting to ROS');
-rosinit('http://localhost:11311');
-masterHost = 'localhost';
+%rosinit('http://localhost:11311');
+%masterHost = 'localhost';
+rosinit('http://bea.local:11311');
+masterHost = 'bea.local';
 %node = robotics.ros.Node('/movement_decision', masterHost);
 
 %Startup Movement Computation Service

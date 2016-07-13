@@ -7,8 +7,8 @@
 
 #include "Vision_Processor.h"
 
+#include <Color_Segment.h>
 #include <image_transport/subscriber.h>
-#include <opencv2/core/core.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/operations.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -16,8 +16,6 @@
 #include <rosconsole/macros_generated.h>
 #include <cstdint>
 #include <iostream>
-
-#include "../../../include/Color_Segment.h"
 
 
 namespace vision_processing_color_seg{
@@ -27,7 +25,7 @@ namespace vision_processing_color_seg{
 		_ic.get_image_sub_depth().shutdown();
 		_ic.get_out_pub().shutdown();
 		for (int var = 0; var < _frame_segmentations.size(); var++) {
-					delete _frame_segmentations[var];
+			delete _frame_segmentations[var];
 		}
 		_frame_segmentations.erase(_frame_segmentations.begin(), _frame_segmentations.end());
 		clear_msg();
@@ -68,6 +66,7 @@ namespace vision_processing_color_seg{
 	}
 
 	Mat Vision_Processor::depth_color_mapping(Mat color_frame, Mat depth_frame){
+
 
 		if(color_frame.empty()){
 			cout << "No color frame received!" << endl;
@@ -163,28 +162,32 @@ namespace vision_processing_color_seg{
 			return -1;
 		}
 
+
 		depth_color_mapping(current_color_frame, current_depth_frame).copyTo(_color_real_depth_mapping);
 
 		current_color_frame.copyTo(color_cm);
 
-		for (int i = 0; i < n_segmentations; i++) {
-			_frame_segmentations[i]->segmentation(current_color_frame);
-			_frame_segmentations[i]->calculate_areas_centers_mass();
-			seg_color = _frame_segmentations[i]->get_segment()->get_color();
-			cups_color.push_back(seg_color);
-			center_of_mass =_frame_segmentations[i]->get_segment()->get_bigger_cm();
-			if(infinite_center_mass(center_of_mass)){
-				pos_x.push_back(INFINITY);
-				pos_y.push_back(INFINITY);
-				pos_z.push_back(INFINITY);
-			} else{
-				cup_pos = get_cup_pos(center_of_mass.x, center_of_mass.y);
-				pos_x.push_back(cup_pos.x);
-				pos_y.push_back(cup_pos.y);
-				pos_z.push_back(cup_pos.z);
+
+		if(!color_cm.empty()){
+			for (int i = 0; i < n_segmentations; i++) {
+				_frame_segmentations[i]->segmentation(current_color_frame);
+				_frame_segmentations[i]->calculate_areas_centers_mass();
+				seg_color = _frame_segmentations[i]->get_segment()->get_color();
+				cups_color.push_back(seg_color);
+				center_of_mass =_frame_segmentations[i]->get_segment()->get_bigger_cm();
+				if(infinite_center_mass(center_of_mass)){
+					pos_x.push_back(INFINITY);
+					pos_y.push_back(INFINITY);
+					pos_z.push_back(INFINITY);
+				} else{
+					cup_pos = get_cup_pos(center_of_mass.x, center_of_mass.y);
+					pos_x.push_back(cup_pos.x);
+					pos_y.push_back(cup_pos.y);
+					pos_z.push_back(cup_pos.z);
+				}
+				imshow(seg_color, _frame_segmentations[i]->get_segment()->get_segmentation_map());
+				circle(color_cm, center_of_mass, 3, Scalar(255,255,255), 2);
 			}
-			imshow(seg_color, _frame_segmentations[i]->get_segment()->get_segmentation_map());
-			circle(color_cm, center_of_mass, 3, Scalar(255,255,255), 2);
 		}
 
 		imshow("Color CM", color_cm);

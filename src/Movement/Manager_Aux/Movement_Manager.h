@@ -57,7 +57,25 @@ namespace movement_decision {
 			string _current_cup_id;
 			string _baxter_limb;
 
-			void update_cup_info(string cup_color, Point3f cup_xyz, double point_dist);
+			/*
+			 * update_cup_info - private method used to update the xyz position, distance and visibility status of
+			 * a specific cup
+			 *
+			 * params:
+			 * 		- cup_id 	 - string with the identification of the cup
+			 * 		- cup_xyz 	 - 3D position of the cup
+			 * 		- point_dist - Euclidean distance between the robot and the cup position
+			 */
+			void update_cup_info(string cup_id, Point3f cup_xyz, double point_dist);
+
+			/*
+			 * movement_finished - private method that verifies if the current robot movement towards the target has
+			 * finished, either in success or in failure
+			 *
+			 * return:
+			 * 		- true	- if the movement has finished
+			 * 		- false	- if the movement is still under way or waiting to be started
+			 */
 			bool movement_finished();
 
 		public:

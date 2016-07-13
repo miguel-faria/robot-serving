@@ -5,12 +5,14 @@
  *      Author: miguel
  */
 
-#ifndef COLOR_SEG_COLOR_SEGMENTATION_H_
-#define COLOR_SEG_COLOR_SEGMENTATION_H_
+#ifndef INCLUDE_COLOR_SEGMENTATION_H_
+#define INCLUDE_COLOR_SEGMENTATION_H_
 
-#include <iostream>
 #include <opencv2/core/core.hpp>
+#include <opencv2/core/operations.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc/types_c.h>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -20,7 +22,7 @@
 #define RED_LEFT_HIGH_H		((15*179)/360)
 #define RED_RIGHT_LOW_H		((330*179)/360)
 #define RED_RIGHT_HIGH_H	179
-#define RED_LOW_S			((55*255)/100)
+#define RED_LOW_S			((30*255)/100)
 #define RED_HIGH_S			255
 #define RED_LOW_V			((18*255)/100)
 #define RED_HIGH_V			255
@@ -28,7 +30,7 @@
 
 #define GREEN_LOW_H			((70*179)/360)
 #define GREEN_HIGH_H		((140*179)/360)
-#define GREEN_LOW_S			((50*255)/100)
+#define GREEN_LOW_S			((30*255)/100)
 #define GREEN_HIGH_S		255
 #define GREEN_LOW_V			((18*255)/100)
 #define GREEN_HIGH_V		255
@@ -36,7 +38,7 @@
 
 #define BLUE_LOW_H			((160*179)/360)
 #define BLUE_HIGH_H			((280*179)/360)
-#define BLUE_LOW_S			((50*255)/100)
+#define BLUE_LOW_S			((30*255)/100)
 #define BLUE_HIGH_S			255
 #define BLUE_LOW_V			((18*255)/100)
 #define BLUE_HIGH_V			255
@@ -44,7 +46,7 @@
 
 namespace color_seg {
 
-	inline bool is_point(Point2f ptr){
+	bool is_point(Point2f ptr){
 		return (ptr.x == ptr.x) && (ptr.y == ptr.y);
 	}
 
@@ -78,9 +80,9 @@ namespace color_seg {
 				for (int i = 0; i < contours_size; ++i) {
 					mu = moments(contours[i], false);
 					ptr = Point2f(mu.m10/mu.m00, mu.m01/mu.m00);
-					if(!isnan(ptr.x) && !isnan(ptr.y)){
+					if(!isnan(ptr.x) && !isnan(ptr.y))
 						centers_of_mass->push_back(ptr);
-					}else
+					else
 						centers_of_mass->push_back(Point2f(INFINITY, INFINITY));
 				}
 
@@ -173,14 +175,11 @@ namespace color_seg {
 				inRange(img_out, Scalar(_hue[0], _saturation[0], _value[0]),
 						Scalar(_hue[1], _saturation[1], _value[1]), img_out);
 
-				erode(img_out, img_out, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-				dilate(img_out, img_out, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+				erode(img_out, img_out, getStructuringElement(MORPH_RECT, Size(5, 5)) );
+				dilate(img_out, img_out, getStructuringElement(MORPH_RECT, Size(5, 5)) );
 
-				dilate(img_out, img_out, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-				erode(img_out, img_out, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-
-				if(img_out.empty())
-					img_out = Mat::zeros(Size(image.cols, image.rows), COLOR_BGR2HSV);
+				dilate(img_out, img_out, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)) );
+				erode(img_out, img_out, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)) );
 
 				get_segment()->set_segmentation_map(img_out);
 			}
@@ -234,20 +233,17 @@ namespace color_seg {
 				inRange(img_cvt, Scalar(_lower_hue[0], saturation[0], value[0]),
 						Scalar(_lower_hue[1], saturation[1], value[1]), img_L);
 
-				erode(img_H, img_H, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-				dilate(img_H, img_H, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-				dilate(img_H, img_H, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-				erode(img_H, img_H, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+				erode(img_H, img_H, getStructuringElement(MORPH_RECT, Size(5, 5)) );
+				dilate(img_H, img_H, getStructuringElement(MORPH_RECT, Size(5, 5)) );
+				dilate(img_H, img_H, getStructuringElement(MORPH_RECT, Size(5, 5)) );
+				erode(img_H, img_H, getStructuringElement(MORPH_RECT, Size(5, 5)) );
 
-				erode(img_L, img_L, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-				dilate(img_L, img_L, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-				dilate(img_L, img_L, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
-				erode(img_L, img_L, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+				erode(img_L, img_L, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)) );
+				dilate(img_L, img_L, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)) );
+				dilate(img_L, img_L, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)) );
+				erode(img_L, img_L, getStructuringElement(MORPH_ELLIPSE, Size(2, 2)) );
 
 				addWeighted(img_H, 1.0, img_L, 1.0, 0.0, img_out);
-
-				if(img_out.empty())
-					img_out = Mat::zeros(Size(image.cols, image.rows), COLOR_BGR2HSV);
 
 				get_segment()->set_segmentation_map(img_out);
 			}

@@ -5,6 +5,7 @@
  *      Author: miguel
  */
 
+#include <Color_Segmentation.h>
 #include <ros/duration.h>
 #include <ros/init.h>
 #include <ros/node_handle.h>
@@ -18,7 +19,6 @@
 #include <string>
 #include <vector>
 
-#include "../include/Color_Segmentation.h"
 #include "../src/Vision/Color Segmentation/Image_Converter.h"
 #include "../src/Vision/Color Segmentation/Vision_Processor.h"
 

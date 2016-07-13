@@ -13,7 +13,6 @@
 #include <opencv2/core/operations.hpp>
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <iterator>
 #include <string>
 #include <vector>

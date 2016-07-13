@@ -89,11 +89,14 @@ namespace vision_processing_color_seg {
 					return;
 				}
 
-				if(!cv_ptr->image.empty()){
+				try{
 					cv::imshow(COLOR_FRAME_WINDOW, cv_ptr->image);
 					cv::waitKey(3);
 
 					_color_frame = cv_ptr->image;
+				} catch (ros::Exception& e) {
+					ROS_ERROR("ros exception at color_frame_receiver: %s", e.what());
+					return;
 				}
 			}
 
@@ -119,7 +122,7 @@ namespace vision_processing_color_seg {
 				}
 
 
-				if(!cv_ptr->image.empty()){
+				try{
 					cv::imshow(DEPTH_FRAME_WINDOW, cv_ptr->image);
 					cv::waitKey(3);
 
@@ -128,6 +131,9 @@ namespace vision_processing_color_seg {
 
 					_ratio_height = float(_color_frame.rows)/float(_depth_frame.rows);
 					_ratio_width = float(_color_frame.cols)/float(_depth_frame.cols);
+				} catch (ros::Exception& e) {
+					ROS_ERROR("ros exception at depth_frame_receiver: %s", e.what());
+					return;
 				}
 			}
 

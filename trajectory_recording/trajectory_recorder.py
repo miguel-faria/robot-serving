@@ -23,7 +23,7 @@ class TrajectoryRecorder(object):
             self._limbs = {'left': baxter_interface.Limb('left'),
                            'right': baxter_interface.Limb('right')}
         else:
-            self._limbs = {limb: baxter_interface.Limb(args.limb)}
+            self._limbs = {limb: baxter_interface.Limb(limb)}
 
         # Define the cuff sensor callback
         master_limb_name = self._limbs.keys()[0]
