@@ -7,7 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/devel/lib/python2.7/dist-packages/robot_serving" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/devel/lib/python2.7/dist-packages" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 2.7.6 (/usr/bin/python2.7)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.4.3 (/usr/bin/python3.4)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">
