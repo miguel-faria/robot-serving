@@ -5,7 +5,6 @@
  *      Author: miguel
  */
 
-#include <Color_Segmentation.h>
 #include <ros/duration.h>
 #include <ros/init.h>
 #include <ros/node_handle.h>
@@ -19,7 +18,7 @@
 #include <string>
 #include <vector>
 
-#include "Color Segmentation/Image_Converter.h"
+#include "Color Segmentation/Color_Constants.h"
 #include "Color Segmentation/Vision_Processor.h"
 
 using namespace vision_processing_color_seg;
@@ -69,18 +68,19 @@ int main(int argc, char **argv){
 	string subs_depth_topic_name = argv[2];
 	string calibration_params_file = argv[4];
 	string pub_topic_name;
-	Red_HSV_Color_Segmentation* red_segmentation = new Red_HSV_Color_Segmentation(vector<int>{RED_LEFT_LOW_H, RED_LEFT_HIGH_H},
-			vector<int>{RED_RIGHT_LOW_H, RED_RIGHT_HIGH_H},
-			vector<int>{RED_LOW_S, RED_HIGH_S},
-			vector<int>{RED_LOW_V, RED_HIGH_V});
-	HSV_Color_Segmentation* green_segmentation = new HSV_Color_Segmentation(vector<int>{GREEN_LOW_H, GREEN_HIGH_H},
-			vector<int>{GREEN_LOW_S, GREEN_HIGH_S},
-			vector<int>{GREEN_LOW_V, GREEN_HIGH_V},
-			"green");
-	HSV_Color_Segmentation* blue_segmentation = new HSV_Color_Segmentation(vector<int>{BLUE_LOW_H, BLUE_HIGH_H},
-			vector<int>{BLUE_LOW_S, BLUE_HIGH_S},
-			vector<int>{BLUE_LOW_V, BLUE_HIGH_V},
-			"blue");
+
+	HSV_Color_Segmentation* cup1_segmentation = new HSV_Color_Segmentation(vector<int>{ORANGE_LOW_HUE,ORANGE_HIGH_HUE},
+			vector<int>{ORANGE_LOW_SAT,ORANGE_HIGH_SAT},
+			vector<int>{ORANGE_LOW_VAL,ORANGE_HIGH_VAL},
+			"cup2");
+	HSV_Color_Segmentation* cup2_segmentation = new HSV_Color_Segmentation(vector<int>{BLUE_LOW_HUE,BLUE_HIGH_HUE},
+			vector<int>{BLUE_LOW_SAT,BLUE_HIGH_SAT},
+			vector<int>{BLUE_LOW_VAL,BLUE_HIGH_VAL},
+			"cup2");
+	HSV_Color_Segmentation* cup3_segmentation = new HSV_Color_Segmentation(vector<int>{GREEN_LOW_HUE,GREEN_HIGH_HUE},
+			vector<int>{GREEN_LOW_SAT,GREEN_HIGH_SAT},
+			vector<int>{GREEN_LOW_VAL,GREEN_HIGH_VAL},
+			"cup3");
 
 	//ROS node initialization
 	init(argc, argv, "vision_processing");
@@ -92,9 +92,9 @@ int main(int argc, char **argv){
 	signal(SIGSEGV, signal_handler);										//Create handler for segmentation fault
 	pub_topic_name = this_node::getName() + "/" + argv[3];
 	vp->set_cups_publish_topic(pub_topic_name);								//Starting advertising in publish topic
-	vp->add_segmentation(red_segmentation);									//Configurating image segmentation
-	vp->add_segmentation(green_segmentation);								//configurations
-	vp->add_segmentation(blue_segmentation);
+	vp->add_segmentation(cup1_segmentation);									//Configurating image segmentation
+	vp->add_segmentation(cup2_segmentation);								//configurations
+	vp->add_segmentation(cup3_segmentation);
 	vp->set_timer(vp->get_ic().get_nh().createTimer(ros::Duration(2.5),
 			&Vision_Processor::process_and_send, vp));						//Setting timed processing of frames
 

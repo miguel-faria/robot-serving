@@ -7,7 +7,6 @@
 
 #include "Vision_Processor.h"
 
-#include <Color_Segment.h>
 #include <image_transport/subscriber.h>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/operations.hpp>

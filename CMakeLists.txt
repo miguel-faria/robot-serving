@@ -158,16 +158,16 @@ target_link_libraries(cup_identification_recording ${OpenCV_LIBS} ${catkin_LIBRA
 ##############################
 #### FOR TESTING ONLY!!!! ####
 ##############################
-add_executable( testing_trajectory_decision test_src/trajectory_decision.cpp ${MOVEMENT_MANAGER_SRC_FILES} )
+add_executable( testing_trajectory_decision src/test_src/trajectory_decision.cpp ${MOVEMENT_MANAGER_SRC_FILES} )
 target_compile_features(testing_trajectory_decision PRIVATE cxx_range_for)
 add_dependencies(testing_trajectory_decision ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(testing_trajectory_decision ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
-add_executable( testing_vision_processing_image_converter test_src/image_converter.cpp )
+add_executable( testing_vision_processing_image_converter src/test_src/image_converter.cpp )
 target_compile_features(testing_vision_processing_image_converter PRIVATE cxx_range_for)
 add_dependencies(testing_vision_processing_image_converter ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(testing_vision_processing_image_converter ${OpenCV_LIBS} ${catkin_LIBRARIES})
 
-add_executable(testing_vision_receiver test_src/video_receiver.cpp )
+add_executable(testing_vision_receiver src/test_src/video_receiver.cpp )
 target_compile_features(testing_vision_receiver PRIVATE cxx_range_for)
 target_link_libraries(testing_vision_receiver ${OpenCV_LIBS} ${catkin_LIBRARIES})

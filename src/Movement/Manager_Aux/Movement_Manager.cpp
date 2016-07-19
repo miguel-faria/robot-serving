@@ -92,6 +92,7 @@ namespace movement_decision{
 		RobotMovementSendTrajectory movement_srv;
 		RobotMovementFeedback feedback_srv;
 		RobotMovementCancelTrajectory restart_srv;
+		int movement_result;
 		float objective_dist = sqrtf(pow(_current_objective.x, 2) + pow(_current_objective.y, 2)
 				+ pow(_current_objective.z, 2));
 
@@ -111,21 +112,16 @@ namespace movement_decision{
 				traj_srv.request.z_pos = _current_objective.z;
 				if(_traj_manager.choose_trajectory_service(_cups_pos, _cups_dist,
 						_current_cup_id, _baxter_limb).call(traj_srv)){
-					_robot_movement = traj_srv.response.robot_trajectory;
+					movement_result = traj_srv.response.movement_success;
 					ROS_INFO("Response from movement trajectory service received.\n");
 				}else {
 					ROS_ERROR("Failed to call service to obtain new trajectory.\n");
 				}
 
-				//Send command to Baxter
-				movement_srv.request.limb = _baxter_limb;
-				movement_srv.request.robot_trajectory = _robot_movement;
-				if(_traj_manager.get_send_traj_serv().call(movement_srv)){
-					_cup_mov_phase.at(_current_cup_id) = Movement_Stage::STARTED_MOVEMENT;
-					ROS_INFO("Response from start new movement service received.\n");
-				}else{
-					_cup_mov_phase.at(_current_cup_id) = Movement_Stage::QUEUED;
-					ROS_ERROR("Failed to call service to start new movement.\n");
+				if(movement_result == Movement_Result::SUCCESS){
+					_cup_mov_phase.at(_current_cup_id) = Movement_Stage::MOVEMENT_SUCCESS;
+				}else if(movement_result == Movement_Result::ABORTED || movement_result == Movement_Result::PREEMPTED){
+					_cup_mov_phase.at(_current_cup_id) = Movement_Stage::MOVEMENT_FAILED;
 				}
 
 			} else{
@@ -159,7 +155,7 @@ namespace movement_decision{
 						traj_srv.request.z_pos = _current_objective.z;
 						if(_traj_manager.choose_trajectory_service(_cups_pos, _cups_dist,
 								_current_cup_id, _baxter_limb).call(traj_srv)){
-							_robot_movement = traj_srv.response.robot_trajectory;
+							movement_result = traj_srv.response.movement_success;
 							ROS_INFO("Response from movement trajectory service received.\n");
 						}else {
 							ROS_ERROR("Failed to call service to obtain new trajectory.\n");

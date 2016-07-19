@@ -31,7 +31,7 @@ from trajectory_msgs.msg import (
 
 class Trajectory(object):
 
-    SETUP_MAX_TIME = 10
+    SETUP_MAX_TIME = 15
     TARGET_DIM = 2
 
     """
@@ -39,7 +39,7 @@ class Trajectory(object):
     """
     def __init__(self, limb):
         self._limb = limb
-        ns = '/robot/_limb/' + limb + '/'
+        ns = '/robot/limb/' + limb + '/'
         self._client = actionlib.SimpleActionClient(
             ns + "follow_joint_trajectory",
             FollowJointTrajectoryAction
@@ -118,6 +118,9 @@ class Trajectory(object):
     def stop(self):
         self._client.cancel_goal()
 
+    def stop_all(self):
+        self._client.cancel_all_goals()
+
     def result(self):
         return self._client.get_result()
 
@@ -139,3 +142,31 @@ class Trajectory(object):
 
         else:
             rospy.logerr("Invalid call to \'start_movement\', recheck parameters.")
+
+    def send_neutral(self):
+        starting_position = {
+            'left': {
+                'left_s0': 0.5721748332275391,
+                'left_s1': 0.2784175126831055,
+                'left_w0': 0.13038836682128907,
+                'left_w1': 0.730558349395752,
+                'left_w2': -1.0507768385009766,
+                'left_e0': -1.047708876928711,
+                'left_e1': 2.012199296209717
+            },
+            'right': {
+                'right_s0': -0.4460049135681153,
+                'right_s1': 0.03873301484985352,
+                'right_w0': -0.18292720874633792,
+                'right_w1': 0.6446554253723145,
+                'right_w2': -1.5370487477050783,
+                'right_e0': 1.5604419546936037,
+                'right_e1': 2.1698158219848636
+            }
+        }
+
+        left = baxter_interface.Limb('left')
+        right = baxter_interface.Limb('right')
+
+        left.move_to_joint_positions(starting_position['left'])
+        right.move_to_joint_positions(starting_position['right'])

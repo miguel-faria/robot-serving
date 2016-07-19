@@ -21,6 +21,7 @@
 
 #include "../src/Vision/Color Segmentation/Image_Converter.h"
 #include "../src/Vision/Color Segmentation/Vision_Processor.h"
+#include "../src/Vision/Color Segmentation/Color_Constants.h"
 
 using namespace vision_processing_color_seg;
 
@@ -69,10 +70,9 @@ int main(int argc, char **argv){
 	string subs_depth_topic_name = argv[2];
 	string calibration_params_file = argv[4];
 	string pub_topic_name;
-	Red_HSV_Color_Segmentation* red_segmentation = new Red_HSV_Color_Segmentation(vector<int>{RED_LEFT_LOW_H, RED_LEFT_HIGH_H},
-			vector<int>{RED_RIGHT_LOW_H, RED_RIGHT_HIGH_H},
-			vector<int>{RED_LOW_S, RED_HIGH_S},
-			vector<int>{RED_LOW_V, RED_HIGH_V});
+	HSV_Color_Segmentation* red_segmentation = new HSV_Color_Segmentation(vector<int>{RED_LOW_HUE, RED_HIGH_HUE},
+			vector<int>{RED_LOW_SAT, RED_HIGH_SAT},
+			vector<int>{RED_LOW_VAL, RED_HIGH_VAL});
 
 	//ROS node initialization
 	init(argc, argv, "vision_processing");

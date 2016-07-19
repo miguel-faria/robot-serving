@@ -42,6 +42,12 @@ namespace movement_decision {
 				MOVEMENT_FAILED
 			};
 
+			enum Movement_Result {
+				ABORTED,
+				SUCCESS,
+				PREEMPTED
+			};
+
 			ros::NodeHandle _nh;
 			ros::Subscriber _sub_cups_pos;
 			ros::Timer _srvc_timer;
