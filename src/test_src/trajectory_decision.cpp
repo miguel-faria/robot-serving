@@ -45,9 +45,9 @@ int main(int argc, char **argv) {
 
 	init(argc, argv, "mixed_trajectory_tester");
 	NodeHandle nh;
-	Mixed_Trajectory mt = Mixed_Trajectory();
-	mt.set_legible_trajectory_srv(nh.serviceClient<robot_serving::Movement>(legible_uri));
-	mt.set_predictable_trajectory_srv(nh.serviceClient<robot_serving::Movement>(predictable_uri));
+	Mixed_Trajectory* mt = new Mixed_Trajectory();
+	mt->set_legible_trajectory_srv(nh.serviceClient<robot_serving::Movement>(legible_uri));
+	mt->set_predictable_trajectory_srv(nh.serviceClient<robot_serving::Movement>(predictable_uri));
 
 	//Cups1 maps initialization
 	cups1.insert(pair<string, Point3f>("red", Point3f(-500, 250, 1000)));
@@ -71,44 +71,49 @@ int main(int argc, char **argv) {
 	cout << "------------------" << endl << "----- TEST 1 -----" << endl << "------------------" << endl;
 	cout << "Last cup on the right! - Legible" << endl;
 
-	result = mt.choose_trajectory_service(cups1, cups1_dist, "red", "right");
+	result = mt->choose_trajectory_service(cups1, cups1_dist, "red", "right");
 
 	result.getService() == legible_uri ? cout << "PASSED!!!" << endl : cout << "FAILED!!!" << endl;
+	cout << result.getService() << endl;
 	cout << "------------------" << endl << "----- TEST 2 -----" << endl << "------------------" << endl;
 	cout << "Green Cup with space! - Legible" << endl;
 
-	result = mt.choose_trajectory_service(cups1, cups1_dist, "green", "right");
+	result = mt->choose_trajectory_service(cups1, cups1_dist, "green", "right");
 
 	result.getService() == legible_uri ? cout << "PASSED!!!" << endl : cout << "FAILED!!!" << endl;
+	cout << result.getService() << endl;
 	cout << "------------------" << endl << "----- TEST 3 -----" << endl << "------------------" << endl;
 	cout << "Cups equally spaced! - Legible" << endl;
 
 	cups1_dist["red"] = cups1_dist["blue"] = cups1_dist["green"] = 1000;
-	result = mt.choose_trajectory_service(cups1, cups1_dist, "red", "right");
+	result = mt->choose_trajectory_service(cups1, cups1_dist, "red", "right");
 
 	result.getService() == legible_uri ? cout << "PASSED!!!" << endl : cout << "FAILED!!!" << endl;
+	cout << result.getService() << endl;
 	cout << "------------------" << endl << "----- TEST 4 -----" << endl << "------------------" << endl;
 	cout << "Green Cup surrounded! - Predictable" << endl;
 
-	result = mt.choose_trajectory_service(cups2, cups2_dist, "green", "right");
+	result = mt->choose_trajectory_service(cups2, cups2_dist, "green", "right");
 
 	result.getService() == predictable_uri ? cout << "PASSED!!!" << endl : cout << "FAILED!!!" << endl;
+	cout << result.getService() << endl;
 	cout << "------------------" << endl << "----- TEST 5 -----" << endl << "------------------" << endl;
 	cout << "Cup close to left one! - Predictable" << endl;
 
-	result = mt.choose_trajectory_service(cups2, cups2_dist, "pink", "left");
+	result = mt->choose_trajectory_service(cups2, cups2_dist, "pink", "left");
 
 	result.getService() == predictable_uri ? cout << "PASSED!!!" << endl : cout << "FAILED!!!" << endl;
+	cout << result.getService() << endl;
 	cout << "------------------" << endl << "----- TEST 6 -----" << endl << "------------------" << endl;
 	cout << "Last Cup to serve! - Predictable" << endl;
 
 	cups2.erase("blue");
 	cups2.erase("green");
 	cups2.erase("pink");
-	result = mt.choose_trajectory_service(cups2, cups2_dist, "red", "right");
+	result = mt->choose_trajectory_service(cups2, cups2_dist, "red", "right");
 
 	result.getService() == predictable_uri ? cout << "PASSED!!!" << endl : cout << "FAILED!!!" << endl;
-
+	cout << result.getService() << endl;
 
 	return 0;
 

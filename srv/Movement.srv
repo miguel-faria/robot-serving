@@ -4,4 +4,4 @@ float64 	y_pos			# cup y position
 float64 	z_pos			# cup z position
 ---
 # Service response
-PMPTraj 	robot_trajectory 	# vector with the sequence of joint angles to perform the given movement
+int64 		movement_success 	# an integer coding if the movement ended in success or had a problem (0 - Aborted, 1 - Success, 2 - Preempted)
