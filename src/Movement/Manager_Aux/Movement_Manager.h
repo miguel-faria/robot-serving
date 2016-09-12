@@ -29,6 +29,7 @@
 #include "../../../devel/include/robot_serving/Cups.h"
 #include "../../../devel/include/robot_serving/ManageExpression.h"
 #include "../../../devel/include/robot_serving/PMPTraj.h"
+#include "../../../devel/include/robot_serving/SpeechCues.h"
 #include "../Trajectory_Types/Mixed_Trajectory.h"
 #include "../Trajectory_Types/Single_Trajectory.h"
 
@@ -42,9 +43,10 @@ namespace movement_decision {
 #define CANCEL_MOVEMENT 		1
 #define RESTART_MOVEMENT 		2
 #define MAX_TIME_OFF_FRAME  	5
-#define MAX_REACH				1400
+#define MAX_REACH				1500
 #define VERTICAL_DISPLACEMENT	0.075
 #define DEPTH_DISPLACEMENT		-0.05
+#define MAX_VERTICAL_HEIGTH		1.3
 
 	class MovementManager {
 
@@ -72,12 +74,28 @@ namespace movement_decision {
 				LOOKING
 			};
 
+			enum Speech_Interactions{
+				RAISE_CUP = 1,
+				COME_CLOSER,
+				STRAIGHTEN_CUP,
+				RAISE_CUP_MULTI,
+				COME_CLOSER_MULTI,
+				NEXT,
+				NEXT2,
+				LAST_CUP
+			};
+
 			bool _can_start = false;
+			bool _asked_straight = false;
+
+			int _closer_counter = 0;
+			int _counter_served = 0;
 
 			ros::NodeHandle _nh;
 			ros::Subscriber _sub_cups_pos;
 			ros::Subscriber _start_signal;
 			ros::Publisher _facial_expression_mng;
+			ros::Publisher _speech_cues_mng;
 			ros::Timer _srvc_timer;
 			ros::Timer _baxter_social_reaction;
 			Trajectory_Manager *_traj_manager;
@@ -85,6 +103,7 @@ namespace movement_decision {
 			map<string, Point3f> _cups_pos;
 			map<string, double> _cups_dist;
 			map<string, bool> _cups_observable;
+			map<string, bool> _cups_served;
 			map<string, int> _cup_mov_phase;
 			map<string, int> _cup_time_unseen;
 
@@ -130,6 +149,7 @@ namespace movement_decision {
 				_start_signal = _nh.subscribe("/start", 100, &MovementManager::start_handler, this);
 
 				_facial_expression_mng = _nh.advertise<robot_serving::ManageExpression>("facial_expression_mng", 1000);
+				_speech_cues_mng = _nh.advertise<robot_serving::SpeechCues>("speech_cues_mng", 1000);
 
 				_traj_manager = new Single_Trajectory(traj_type, _nh, traj_srvc_name,
 						send_traj_srv, get_feedback_srv, restart_srv);
@@ -140,6 +160,7 @@ namespace movement_decision {
 				_cups_pos = map<string, Point3f>();
 				_cups_dist = map<string, double>();
 				_cups_observable = map<string, bool>();
+				_cups_served = map<string, bool>();
 				_cup_mov_phase = map<string, int>();
 				_baxter_limb = baxter_limb;
 				_current_cup_id = string();
@@ -154,6 +175,7 @@ namespace movement_decision {
 				_start_signal = _nh.subscribe("/start", 100, &MovementManager::start_handler, this);
 
 				_facial_expression_mng = _nh.advertise<robot_serving::ManageExpression>("facial_expression_mng", 1000);
+				_speech_cues_mng = _nh.advertise<robot_serving::SpeechCues>("speech_cues_mng", 1000);
 
 				_traj_manager = new Mixed_Trajectory(traj_type, _nh, legible_traj_srv, predictable_traj_srv, send_traj_srv,
 						get_feedback_srv, restart_srv);
@@ -164,6 +186,7 @@ namespace movement_decision {
 				_cups_pos = map<string, Point3f>();
 				_cups_dist = map<string, double>();
 				_cups_observable = map<string, bool>();
+				_cups_served = map<string, bool>();
 				_cup_mov_phase = map<string, int>();
 				_baxter_limb = baxter_limb;
 				_current_cup_id = string();
@@ -210,7 +233,7 @@ namespace movement_decision {
 							&& reacheable(it->first)){
 						select_cup_id = it->first;
 						selected = true;
-					}else{_facial_expression_mng = _nh.advertise<robot_serving::ManageExpression>("facial_expression_mng", 1000);
+					}else{
 						cups.erase(it->first);
 					}
 				}

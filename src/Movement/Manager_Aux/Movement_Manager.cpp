@@ -70,6 +70,9 @@ namespace movement_decision{
 
 	void MovementManager::cups_info_receiver(const CupsConstPtr& msg){
 
+		if(msg->cups_pos_x.size() < 1)
+			return;
+
 		int n_cups = msg->n_cups;
 		double point_dist;
 		vector<float> x_vec, y_vec, z_vec;
@@ -92,6 +95,7 @@ namespace movement_decision{
 				point_dist = sqrt(pow(cup_xyz.x*1000,2) + pow(cup_xyz.y*1000,2) + pow(cup_xyz.z*1000,2));
 				insert_cup_info(cup_ids[i], cup_xyz, point_dist);
 			}
+
 		} else{
 			update_visible_cups(cup_ids);
 			for(int i = 0; i < n_cups; i++){
@@ -116,21 +120,14 @@ namespace movement_decision{
 
 		map<string, Point3f> selectable = map<string, Point3f> (_cups_pos);
 
-		for(map<string, int>::iterator it = _cup_mov_phase.begin(); it != _cup_mov_phase.end(); it++){
-			if(it->second != MovementManager::Movement_Stage::QUEUED)
-				selectable.erase(it->first);
-		}
-
+		for(map<string, bool>::iterator it = _cups_served.begin(); it != _cups_served.end(); it++)
+			selectable.erase(it->first);
 
 		return selectable;
 	}
 
 	bool MovementManager::all_cups_served(){
-		for(map<string, int>::iterator it = _cup_mov_phase.begin(); it != _cup_mov_phase.end(); it++){
-			if(it->second == Movement_Stage::QUEUED || it->second == Movement_Stage::STARTED_MOVEMENT)
-				return false;
-		}
-		return true;
+		return _cups_pos.size() == _cups_served.size();
 	}
 
 	void MovementManager::movement_decision(const TimerEvent& event){
@@ -152,8 +149,11 @@ namespace movement_decision{
 				+ pow(_current_objective.z, 2));
 		ServiceClient cli;
 		robot_serving::ManageExpression new_expression;
+		robot_serving::SpeechCues new_cue;
+		float avg_dist_height;
 
 		ROS_INFO("Movement Decision");
+		ROS_INFO("Cups Left: %d", (int)cups_left.size());
 
 		if(_cups_pos.size() > 0){
 
@@ -200,6 +200,9 @@ namespace movement_decision{
 					}
 
 					_log_file << "Result " << _current_cup_id << ": " << movement_result << endl;
+					_cups_served.insert(std::pair<string, bool>(_current_cup_id, true));
+					_log_file << "Added cup: " << _current_cup_id << " to successfull list!" << endl;
+					_log_file << "Served " << (int)_cups_served.size() << " cups." << endl;
 
 					if(movement_result == Movement_Result::SUCCESS){
 						_cup_mov_phase.at(_current_cup_id) = Movement_Stage::MOVEMENT_SUCCESS;
@@ -215,7 +218,43 @@ namespace movement_decision{
 						ROS_INFO("Changing facial expression to Sad!");
 					}
 					_facial_expression_mng.publish(new_expression);
+					if(_counter_served < 1){
+						new_cue.speech_cue_code = Speech_Interactions::NEXT;
+					}else if(_counter_served > ((int)_cups_pos.size() - 1)){
+						new_cue.speech_cue_code = Speech_Interactions::LAST_CUP;
+					}else {
+						new_cue.speech_cue_code = Speech_Interactions::NEXT2;
+					}
+					_speech_cues_mng.publish(new_cue);
+					_counter_served++;
 				}else{
+					if(((int)_cups_pos.size() - (int)_cups_served.size()) > 1){
+						avg_dist_height = 0;
+						for(map<string, Point3f>::iterator it = cups_left.begin(); it != cups_left.end(); it++)
+							avg_dist_height += sqrt(pow(it->second.y, 2) + pow(it->second.z, 2));
+						avg_dist_height = (avg_dist_height / (float)((int)cups_left.size()));
+						if(avg_dist_height > MAX_VERTICAL_HEIGTH || _closer_counter > 2){
+							new_cue.speech_cue_code = Speech_Interactions::RAISE_CUP_MULTI;
+						} else{
+							new_cue.speech_cue_code = Speech_Interactions::COME_CLOSER_MULTI;
+							_closer_counter++;
+						}
+					}else {
+						if(sqrt(pow(cups_left.begin()->second.y, 2) + pow(cups_left.begin()->second.z, 2)) > MAX_VERTICAL_HEIGTH)
+							new_cue.speech_cue_code = Speech_Interactions::RAISE_CUP;
+						else if(_closer_counter > 2){
+							if(!_asked_straight){
+								new_cue.speech_cue_code = Speech_Interactions::STRAIGHTEN_CUP;
+								_asked_straight = true;
+							} else {
+								new_cue.speech_cue_code = Speech_Interactions::RAISE_CUP;
+							}
+						} else {
+							new_cue.speech_cue_code = Speech_Interactions::COME_CLOSER;
+							_closer_counter++;
+						}
+					}
+					_speech_cues_mng.publish(new_cue);
 					ROS_INFO("No Cup in Robot's range");
 				}
 

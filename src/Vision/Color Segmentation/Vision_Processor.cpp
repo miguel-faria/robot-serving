@@ -124,6 +124,10 @@ namespace vision_processing_color_seg{
 	}
 
 	int Vision_Processor::image_processing(){
+
+		if(!_ic.is_received_depth())
+			return -1;
+
 		Mat current_color_frame;
 		Mat current_depth_frame;
 		Mat color_cm;
@@ -139,28 +143,29 @@ namespace vision_processing_color_seg{
 		stringstream ss;
 		ofstream out_file;
 
-		_ic.get_color_frame().copyTo(current_color_frame);
-		_ic.get_depth_frame().copyTo(current_depth_frame);
-
 		if(_ic.get_out_pub().getTopic() == string()){
 			ROS_ERROR("[VISION PROCESSING]: Publisher not associated to topic!");
 			return -1;
 		}
 
-		if(current_color_frame.empty()){
+		if(_ic.get_color_frame().empty()){
 			ROS_ERROR("[VISION PROCESSING]: No Color Frame received!");
 			if(_ic.get_image_color_sub().getNumPublishers() < 1)
 				ROS_INFO("[VISION PROCESSING]: No Color Frame publishers!");
 			return -1;
 		}
 
-		if(current_depth_frame.empty()){
+		if(_ic.get_depth_frame().empty()){
 			ROS_ERROR("[VISION PROCESSING]: No Depth Frame received!");
 			if(_ic.get_image_sub_depth().getNumPublishers() < 1)
 				ROS_INFO("[VISION PROCESSING]: No Depth Frame publishers!");
 			return -1;
 		}
 
+		ROS_INFO("Image Processing");
+
+		_ic.get_color_frame().copyTo(current_color_frame);
+		_ic.get_depth_frame().copyTo(current_depth_frame);
 
 		depth_color_mapping(current_color_frame, current_depth_frame).copyTo(_color_real_depth_mapping);
 
@@ -170,19 +175,20 @@ namespace vision_processing_color_seg{
 			for (int i = 0; i < n_segmentations; i++) {
 				_frame_segmentations[i]->segmentation(current_color_frame);
 				_frame_segmentations[i]->calculate_areas_centers_mass();
+				ROS_INFO("Segmentation");
 				seg_color = _frame_segmentations[i]->get_segment()->get_color();
-				cups_color.push_back(seg_color);
+				ROS_INFO("Get Current Color");
 				center_of_mass =_frame_segmentations[i]->get_segment()->get_bigger_cm();
-				if(infinite_center_mass(center_of_mass)){
-					pos_x.push_back(INFINITY);
-					pos_y.push_back(INFINITY);
-					pos_z.push_back(INFINITY);
-				} else{
+				ROS_INFO("Get Center of Mass");
+				if(!infinite_center_mass(center_of_mass)){
 					cup_pos = get_cup_pos(center_of_mass.x, center_of_mass.y);
+					cups_color.push_back(seg_color);
 					pos_x.push_back(cup_pos.x);
 					pos_y.push_back(cup_pos.y);
 					pos_z.push_back(cup_pos.z);
 				}
+				//imshow(_frame_segmentations[i]->get_segment()->get_color(),
+				//		_frame_segmentations[i]->get_segment()->get_segmentation_map());
 				circle(color_cm, center_of_mass, 3, Scalar(255,255,255), 2);
 			}
 		}
@@ -191,7 +197,7 @@ namespace vision_processing_color_seg{
 		imshow("Color CM", color_cm);
 		resizeWindow("Color CM", 960, 540);
 
-		_msg.n_cups = n_segmentations;
+		_msg.n_cups = (int)cups_color.size();
 		_msg.cups_color = cups_color;
 		_msg.cups_pos_x = pos_x;
 		_msg.cups_pos_y = pos_y;

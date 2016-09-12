@@ -72,6 +72,7 @@ class VoiceManager:
         self.sentence = None
 
         self.something_to_say = False
+        self.string = ""
 
     def speakEmotion(self, speak_req):
         
@@ -107,7 +108,7 @@ class VoiceManager:
         return response
 
         # Speak the chosen sentence
-        self.speakString()
+        #self.speakString()
         
         
 
@@ -177,7 +178,10 @@ class VoiceManager:
         print(command_str)
         os.system(command_str)
 
-    def speakString(self, string):
+    def speakString(self, string = ""):
+
+        if not string:
+            string = self.string
 
         # Issue a terminal command
         command_str = self.espeak_str + "\"" + string + "\""

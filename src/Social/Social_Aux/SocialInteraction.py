@@ -1,17 +1,19 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
 import random
 import time
 
 import baxter_interface
 import rospy
-from enum import Enum
-from robot_serving.msg import ManageExpression, FollowBehaviour, screen_mode
+from robot_serving.msg import ManageExpression, FollowBehaviour, screen_mode, SpeechCues
 from std_srvs.srv import Empty, EmptyResponse
 
 from Social_Aux.screen_display_manager import PerceptionReactor
 from Social_Aux.voice_manager import VoiceManager
 
 
-class SpeechCodes(Enum):
+class SpeechCodes(object):
 	RAISE_CUP = 1
 	COME_CLOSER = 2
 	STRAIGHTEN_CUP = 3
@@ -20,6 +22,7 @@ class SpeechCodes(Enum):
 	NEXT = 6
 	NEXT2 = 7
 	LAST_CUP = 8
+
 
 class SocialInteraction(object):
 
@@ -31,8 +34,8 @@ class SocialInteraction(object):
 		}
 		self._finished = False
 		self._finish_signal_service = rospy.Service('finish_interaction_server', Empty, self.handle_finish_signal)
-		self._facial_expression_mng = rospy.Subscriber('facial_expression_mng', ManageExpression,
-													   self._change_expression)
+		self._facial_expression_mng = rospy.Subscriber('facial_expression_mng', ManageExpression, self._change_expression)
+		self._speech_interaction_mng = rospy.Subscriber('speech_cues_mng', SpeechCues, self._speech_interact)
 
 		self._scene_manager = PerceptionReactor()
 		self._voice_manager = VoiceManager()
@@ -67,7 +70,7 @@ class SocialInteraction(object):
 		self._log_file.write("\n")
 
 	def _speech_interact(self, msg):
-		interact_code = msg.speech_code
+		interact_code = msg.speech_cue_code
 
 		interactions = {
 			SpeechCodes.RAISE_CUP: ["Por favor, levanta o copo.", "Levanta um pouco o copo",
@@ -93,10 +96,11 @@ class SocialInteraction(object):
 		}
 
 		if interact_code in interactions:
+			self._log_file.write("Received speech interaction code: " + str(interact_code) + "\n")
 			self._voice_manager.speakString(interactions[interact_code][random.randrange(len(interactions[interact_code]))])
 		else:
 			rospy.loginfo('Invalid speech interaction code.')
-			self._log_file.write("Received invalid speech interaction code: " + str(msg.face_code) + "\n")
+			self._log_file.write("Received invalid speech interaction code: " + str(interact_code) + "\n")
 			return
 
 	def happy_face(self):

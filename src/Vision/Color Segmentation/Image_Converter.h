@@ -52,6 +52,7 @@ namespace vision_processing_color_seg {
 
 			float _ratio_height;
 			float _ratio_width;
+			bool _received_depth = false;
 
 
 		public:
@@ -131,6 +132,8 @@ namespace vision_processing_color_seg {
 
 					_ratio_height = float(_color_frame.rows)/float(_depth_frame.rows);
 					_ratio_width = float(_color_frame.cols)/float(_depth_frame.cols);
+					_received_depth = true;
+
 				} catch (ros::Exception& e) {
 					ROS_ERROR("ros exception at depth_frame_receiver: %s", e.what());
 					return;
@@ -211,6 +214,14 @@ namespace vision_processing_color_seg {
 
 			void set_ratio_width(float ratio_width) {
 				_ratio_width = ratio_width;
+			}
+
+			bool is_received_depth( ) const {
+				return _received_depth;
+			}
+
+			void set_received_depth(bool received_depth = false) {
+				_received_depth = received_depth;
 			}
 
 			template <typename T> void assign_pub_topic(string out_topic){

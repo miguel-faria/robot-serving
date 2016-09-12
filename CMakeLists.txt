@@ -62,7 +62,8 @@ add_message_files(
   PMPPoint.msg
   PMPTraj.msg
   screen_mode.msg
-    ManageExpression.msg
+  ManageExpression.msg
+  SpeechCues.msg
 )
 
 ## Generate services in the 'srv' folder
