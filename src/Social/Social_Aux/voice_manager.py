@@ -39,8 +39,11 @@
 # '''
 
 # __docformat__ = "restructuredtext en"
-import rospy, os, random
+import os
+import random
+import rospy
 from gaips_msgs.srv import speak_req, speak_reqResponse
+
 
 # import rospy, cv, cv2, sys, os, numpy, math, time, random, copy
 # import roslib; roslib.load_manifest('sensor_msgs')
@@ -60,10 +63,10 @@ from gaips_msgs.srv import speak_req, speak_reqResponse
 
 class VoiceManager:
     def __init__(self):
-    
+
         # Espeak in-line command parameter settings
         # self.espeak_str = " espeak -s 175 -p 90 -g 10 "
-        self.espeak_str = " espeak -v pt-pt -p 35 "
+        self.espeak_str = " espeak -v pt-pt -p 80 -g 5 "
 
         # Service setup
         self.t = rospy.Service('/bea/speak', speak_req, self.speakEmotion)
@@ -75,7 +78,7 @@ class VoiceManager:
         self.string = ""
 
     def speakEmotion(self, speak_req):
-        
+
         # Depending on the emotion desired, choose a self.sentence adequate
         if speak_req.sentence == speak_req.GREETING:
             self.chooseGreeting()
@@ -109,68 +112,84 @@ class VoiceManager:
 
         # Speak the chosen sentence
         #self.speakString()
-        
-        
+
+
 
     def chooseGreeting(self):
 
         sentences = ["Olá, o meu nome é ",
-                    "Olá, eu sou "]
+                     "Olá, eu sou "]
 
         self.string = sentences[random.randrange(len(sentences))]
 
     def chooseGoodbye(self):
 
         sentences = ["Adeus",
-                    "Até à próxima"]
+                     "Até à próxima"]
 
         self.string = sentences[random.randrange(len(sentences))]
 
     def chooseHappiness(self):
 
         sentences = ["Boa",
-                    "Fiche"]
+                     "Fiche"]
 
         self.string = sentences[random.randrange(len(sentences))]
 
     def chooseExcitation(self):
 
         sentences = ["Sim! ",
-                    "Consegui! ",
-                    "Fantástico! "]
+                     "Consegui! ",
+                     "Fantástico! "]
 
         self.string = sentences[random.randrange(len(sentences))]
 
     def chooseSadness(self):
 
         sentences = ["Oh não",
-                    "Óo",
-                    "Bolas",
-                    "Fogo"]
+                     "Óo",
+                     "Bolas",
+                     "Fogo"]
 
         self.string = sentences[random.randrange(len(sentences))]
 
     def chooseSurprise(self):
 
         sentences = ["Uau! ",
-                    "Olá! "]
+                     "Olá! "]
 
         self.string = sentences[random.randrange(len(sentences))]
 
     def chooseSleepy(self):
 
         sentences = ["Estou com sono",
-                    "Que sono "]
+                     "Que sono "]
 
         self.string = sentences[random.randrange(len(sentences))]
 
     def chooseNervous(self):
 
         sentences = ["É difícil",
-                    "Puxa ",
-                    "É desta"]
+                     "Puxa ",
+                     "É desta"]
 
         self.string = sentences[random.randrange(len(sentences))]
+
+    def choose_cup_filling_greeting(self, greeting_code):
+
+        greetings = {
+            1: ["Olá, o meu nome é " + "\"" + "; espeak -v en-us -p 90 -g 10 \"" + "Baxter" + "\"" +
+                "; espeak -v pt-pt -p 90 -g 10 \" e hoje vou servir-vos água.",
+                "Olá, sou o " + "\"" + "; espeak -v en-us -p 90 -g 10 \"" + "Baxter" + "\"" +
+                "; espeak -v pt-pt -p 90 -g 10 \"e vou ser o vosso\"" + "; espeak -v en-us -p 90 -g 10 \"bartender\"" +
+                "; espeak -v pt-pt -p 90 -g 10 \" hoje"],
+            2: ["Ainda com sede? Eu sei... Tem estado calor. Eu encho-vos esses copos.",
+                "De volta!? Estou a ver que só um copo não vos chegou, eu encho-vos outro."],
+            3: ["Querem mais!? Vocês gostaram mesmo de mim! Então vá dêem cá esses copos.",
+                "Mais!? Onde põe vocês essa água? Vamos lá, não vos posso deixar com sede!"]
+        }
+
+        self.string = greetings[greeting_code][random.randrange(len(greetings[greeting_code]))]
 
     def speakGreeting(self):
 
@@ -195,7 +214,7 @@ def main():
     rospy.init_node('Bea_voice_manager')
 
     try:
-    
+
         vm = VoiceManager()
 
         rospy.loginfo("Bea Voice Manager Started")
@@ -205,7 +224,7 @@ def main():
                 vm.speakString()
             rate.sleep()
     except KeyboardInterrupt:
-        rospy.logerr("Received Keyboard shutdown: Shutting down")  
+        rospy.logerr("Received Keyboard shutdown: Shutting down")
     except Exception as e:
         rospy.logerr(e)
 

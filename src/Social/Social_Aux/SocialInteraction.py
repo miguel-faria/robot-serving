@@ -26,8 +26,9 @@ class SpeechCodes(object):
 
 class SocialInteraction(object):
 
-	def __init__(self):
+	def __init__(self, interaction_number):
 
+		self.interaction_number = interaction_number
 		self._limbs = {
 			'right': baxter_interface.Limb('right'),
 			'left': baxter_interface.Limb('left')
@@ -140,9 +141,9 @@ class SocialInteraction(object):
 
 	def hello(self):
 		self.happy_face()
-		self._voice_manager.chooseGreeting()
+		self._voice_manager.choose_cup_filling_greeting(self.interaction_number)
 		#self.wave_hello()
-		self._voice_manager.speakGreeting()
+		self._voice_manager.speakString()
 		time.sleep(1)
 		self.neutral_face()
 		self.move_neutral()
