@@ -125,9 +125,6 @@ namespace vision_processing_color_seg{
 
 	int Vision_Processor::image_processing(){
 
-		if(!_ic.is_received_depth())
-			return -1;
-
 		Mat current_color_frame;
 		Mat current_depth_frame;
 		Mat color_cm;
@@ -145,11 +142,13 @@ namespace vision_processing_color_seg{
 
 		if(_ic.get_out_pub().getTopic() == string()){
 			ROS_ERROR("[VISION PROCESSING]: Publisher not associated to topic!");
+			_log_file << "No topic associated to publisher" << endl;
 			return -1;
 		}
 
 		if(_ic.get_color_frame().empty()){
 			ROS_ERROR("[VISION PROCESSING]: No Color Frame received!");
+			_log_file << "No color image received." << endl;
 			if(_ic.get_image_color_sub().getNumPublishers() < 1)
 				ROS_INFO("[VISION PROCESSING]: No Color Frame publishers!");
 			return -1;
@@ -157,6 +156,7 @@ namespace vision_processing_color_seg{
 
 		if(_ic.get_depth_frame().empty()){
 			ROS_ERROR("[VISION PROCESSING]: No Depth Frame received!");
+			_log_file << "No depth image received." << endl;
 			if(_ic.get_image_sub_depth().getNumPublishers() < 1)
 				ROS_INFO("[VISION PROCESSING]: No Depth Frame publishers!");
 			return -1;
@@ -183,6 +183,8 @@ namespace vision_processing_color_seg{
 				if(!infinite_center_mass(center_of_mass)){
 					cup_pos = get_cup_pos(center_of_mass.x, center_of_mass.y);
 					cups_color.push_back(seg_color);
+					_log_file << "Center of mass " << seg_color << ": " << cup_pos.x << "," << cup_pos.y <<
+							"," << cup_pos.z << endl;
 					pos_x.push_back(cup_pos.x);
 					pos_y.push_back(cup_pos.y);
 					pos_z.push_back(cup_pos.z);
@@ -215,8 +217,10 @@ namespace vision_processing_color_seg{
 				send_msg();
 				clear_msg();
 			}else {
-				ROS_INFO("[VISION PROCESSING]: Message not sent");
+				ROS_INFO("[VISION PROCESSING]: Message without data sent.");
+				_log_file << "Message without data sent due to error in image processing.";
 				clear_msg();
+				_ic.get_out_pub().publish(_msg);
 			}
 		}
 	}
@@ -228,9 +232,11 @@ namespace vision_processing_color_seg{
 			ROS_INFO("[VISION PROCESSING]: Publishing complete.");
 			ROS_INFO_STREAM("[VISION PROCESSING]: " << _ic.get_out_pub().getNumSubscribers() <<
 					" Subscribers in topic.\n\n");
+			_log_file << "Message correctly sent!" << endl;
 		} else{
 			ROS_INFO("[VISION PROCESSING]: Publishing incomplete.");
 			ROS_INFO("[VISION PROCESSING]: No Subscribers in topic.\n\n");
+			_log_file << "Publishing incomplete." << endl;
 		}
 
 	}

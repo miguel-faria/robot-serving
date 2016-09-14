@@ -66,7 +66,7 @@ class VoiceManager:
 
         # Espeak in-line command parameter settings
         # self.espeak_str = " espeak -s 175 -p 90 -g 10 "
-        self.espeak_str = " espeak -v pt-pt -p 80 -g 5 "
+        self.espeak_str = " espeak -v pt-pt -p 80 -g 5 -s 145 "
 
         # Service setup
         self.t = rospy.Service('/bea/speak', speak_req, self.speakEmotion)
@@ -124,8 +124,9 @@ class VoiceManager:
 
     def chooseGoodbye(self):
 
-        sentences = ["Adeus",
-                     "Até à próxima"]
+        sentences = ["Até à próxima!",
+                     "Gostei de vocês, vemo-nos noutra vez!",
+                     "Por agora é tudo, até depois!"]
 
         self.string = sentences[random.randrange(len(sentences))]
 
@@ -178,11 +179,10 @@ class VoiceManager:
     def choose_cup_filling_greeting(self, greeting_code):
 
         greetings = {
-            1: ["Olá, o meu nome é " + "\"" + "; espeak -v en-us -p 90 -g 10 \"" + "Baxter" + "\"" +
-                "; espeak -v pt-pt -p 90 -g 10 \" e hoje vou servir-vos água.",
-                "Olá, sou o " + "\"" + "; espeak -v en-us -p 90 -g 10 \"" + "Baxter" + "\"" +
-                "; espeak -v pt-pt -p 90 -g 10 \"e vou ser o vosso\"" + "; espeak -v en-us -p 90 -g 10 \"bartender\"" +
-                "; espeak -v pt-pt -p 90 -g 10 \" hoje"],
+            1: ["Olá, o meu nome é " + "\"" + "; espeak -v en-us -p 90 -g 15 -s 145 \"" + "Baxter" + "\"" +
+                "; espeak -v pt-pt -p 90 -g 15 -s 145 \" e hoje vou servir-vos água.",
+                "Olá, sou u " + "\"" + "; espeak -v en-us -p 90 -g 15 -s 145 \"" + "Baxter" + "\"" +
+                "; espeak -v pt-pt -p 90 -g 15 -s 145 \" e vou ser o vosso bartendarr hoje"],
             2: ["Ainda com sede? Eu sei... Tem estado calor. Eu encho-vos esses copos.",
                 "De volta!? Estou a ver que só um copo não vos chegou, eu encho-vos outro."],
             3: ["Querem mais!? Vocês gostaram mesmo de mim! Então vá dêem cá esses copos.",

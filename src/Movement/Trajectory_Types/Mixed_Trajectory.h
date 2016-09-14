@@ -17,7 +17,10 @@
 #include "../../../devel/include/robot_serving/Movement.h"
 #include "Trajectory_Manager.h"
 
+#define MAX_CUP_DIST 500
+
 namespace movement_decision {
+
 
 	class Mixed_Trajectory : public Trajectory_Manager {
 		private:

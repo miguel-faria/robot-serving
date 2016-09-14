@@ -6,4 +6,4 @@ echo "------------------------"
 echo "-- Interaction Server --"
 echo "------------------------"
 
-python $BaxterInteractionServer
+python $BaxterInteractionServer $1 $2

@@ -82,9 +82,11 @@ namespace movement_decision {
 				COME_CLOSER_MULTI,
 				NEXT,
 				NEXT2,
-				LAST_CUP
+				LAST_CUP,
+				SMALL_TALK
 			};
 
+			bool _received_data = false;
 			bool _can_start = false;
 			bool _asked_straight = false;
 
@@ -164,7 +166,7 @@ namespace movement_decision {
 				_cup_mov_phase = map<string, int>();
 				_baxter_limb = baxter_limb;
 				_current_cup_id = string();
-				_log_file.open("log.txt");
+				_log_file.open("movement_log.txt");
 			}
 
 			MovementManager(string cups_sub_topic, string traj_type, string legible_traj_srv,
@@ -190,7 +192,7 @@ namespace movement_decision {
 				_cup_mov_phase = map<string, int>();
 				_baxter_limb = baxter_limb;
 				_current_cup_id = string();
-				_log_file.open("log.txt");
+				_log_file.open("movement_log.txt");
 			}
 
 			virtual ~MovementManager();
@@ -219,7 +221,8 @@ namespace movement_decision {
 			}
 
 			map<string, Point3f>::iterator choose_next_cup(){
-				map<string, Point3f> cups = map<string, Point3f>(_cups_pos);
+				//map<string, Point3f> cups = map<string, Point3f>(_cups_pos);
+				map<string, Point3f> cups = get_selectable_cups();
 				string select_cup_id;
 				bool selected = false;
 				map<string, Point3f>::iterator it;
@@ -227,14 +230,18 @@ namespace movement_decision {
 				while(!selected && cups.size() > 0){
 					it = cups.begin();
 					std::advance(it, rand() % cups.size());
-					ROS_INFO("Cup %s is at %f", it->first.c_str(), _cups_dist.at(it->first));
-					if((_cup_mov_phase.find(it->first)->second == Movement_Stage::QUEUED) &&
-							(_cups_observable.find(it->first)->second) && !infinite(it->first)
-							&& reacheable(it->first)){
-						select_cup_id = it->first;
-						selected = true;
-					}else{
+					if(_cups_served.find(it->first)->second)
 						cups.erase(it->first);
+					else{
+						ROS_INFO("Cup %s is at %f", it->first.c_str(), _cups_dist.at(it->first));
+						if((_cup_mov_phase.find(it->first)->second == Movement_Stage::QUEUED) &&
+								(_cups_observable.find(it->first)->second) && !infinite(it->first)
+								&& reacheable(it->first)){
+							select_cup_id = it->first;
+							selected = true;
+						}else{
+							cups.erase(it->first);
+						}
 					}
 				}
 				if(selected){

@@ -22,6 +22,7 @@ class SpeechCodes(object):
 	NEXT = 6
 	NEXT2 = 7
 	LAST_CUP = 8
+	SMALL_TALK = 9
 
 
 class SocialInteraction(object):
@@ -91,9 +92,13 @@ class SocialInteraction(object):
 			SpeechCodes.NEXT: ["Pronto! Este já era, venha o próximo!", "Um copinho de água fresquinha bem cheiinho!",
 							   "Já está! Para quem vai ser o próximo?"],
 			SpeechCodes.NEXT2: ["Mais um bem cheio, adoro este trabalho!", "Outro já cheio! Para quem vai ser o próximo?",
-								"E lá vai outro... com vocês isto vai bem depressa!"],
+								"E lá vai outro... com vocês isto vai bem depréssa!"],
 			SpeechCodes.LAST_CUP: ["Pronto! Lá foi mais um.", "Ah! Este foi fácil, obrigado por colaborares!",
-								   "Outro cheio, estou a apanhar o jeito a esta coisa."]
+								   "Outro cheio, estou a apanhar o jeito a esta coisa."],
+			SpeechCodes.SMALL_TALK: ["Então, contem lá, já tinham trabalhado com algum robô?",
+									 "Enquanto estão aqui, posso perguntar-vos como está hoje o dia?" +
+									 " É que não consigo ver lá para fora.",
+									 "Desculpem estar a demorar, mas eu hoje estou um pouco cansado..."]
 		}
 
 		if interact_code in interactions:
@@ -150,15 +155,14 @@ class SocialInteraction(object):
 
 	def goodbye(self):
 		#self.wave_goodbye()
+		time.sleep(1)
+		self.happy_face()
+		self.move_neutral()
 		self._voice_manager.chooseGoodbye()
-		self._scene_manager.clean_face()
-		self._scene_manager.sleepy_face()
-		self._scene_manager.convert_and_publish_image()
 		self._voice_manager.speakString()
 		time.sleep(2)
 		self._scene_manager.sleep_face()
 		self._scene_manager.convert_and_publish_image()
-		self.move_neutral()
 
 	def close_file(self):
 		self._log_file.close()

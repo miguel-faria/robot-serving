@@ -48,6 +48,7 @@ namespace vision_processing_color_seg {
 			ros::Timer _timer;
 			Mat _color_real_depth_mapping;
 			camera_parameters _cam_coeficients;
+			ofstream _log_file;
 
 			virtual Mat depth_color_mapping(Mat color_frame, Mat depth_frame);
 			virtual Point3f get_cup_pos(float color_x_coord, float color_y_coord);
@@ -59,18 +60,30 @@ namespace vision_processing_color_seg {
 			Vision_Processor() {}
 
 			Vision_Processor(string camera_coeficients_name, string sub_topic) : _ic(sub_topic),
-					_cam_coeficients(camera_coeficients_name) {}
+					_cam_coeficients(camera_coeficients_name) {
+
+				_log_file.open("vision_log.txt");
+			}
 
 			Vision_Processor(string camera_coeficients_name, string sub_color_topic, string sub_depth_topic) :
-				_ic(sub_color_topic, sub_depth_topic), _cam_coeficients(camera_coeficients_name) {}
+				_ic(sub_color_topic, sub_depth_topic), _cam_coeficients(camera_coeficients_name) {
+
+				_log_file.open("vision_log.txt");
+			}
 
 			Vision_Processor(string camera_coeficients_name, vector<Color_Segmentation*> frame_segmentations) :
-				_frame_segmentations(frame_segmentations), _cam_coeficients(camera_coeficients_name) {}
+				_frame_segmentations(frame_segmentations), _cam_coeficients(camera_coeficients_name) {
+
+				_log_file.open("vision_log.txt");
+			}
 
 			Vision_Processor(string camera_coeficients_name, string sub_color_topic, string sub_depth_topic,
 								vector<Color_Segmentation*> frame_segmentations) :
 				_ic(sub_color_topic, sub_depth_topic), _frame_segmentations(frame_segmentations),
-				_cam_coeficients(camera_coeficients_name) {}
+				_cam_coeficients(camera_coeficients_name) {
+
+				_log_file.open("vision_log.txt");
+			}
 
 			virtual ~Vision_Processor();
 

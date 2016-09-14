@@ -70,8 +70,11 @@ namespace movement_decision{
 
 	void MovementManager::cups_info_receiver(const CupsConstPtr& msg){
 
-		if(msg->cups_pos_x.size() < 1)
+		if(msg->cups_pos_x.size() < 1){
+			_received_data = false;
 			return;
+		}else
+			_received_data = true;
 
 		int n_cups = msg->n_cups;
 		double point_dist;
@@ -88,28 +91,30 @@ namespace movement_decision{
 
 		ROS_INFO("Cups Info Receiver");
 
-		if(_cups_pos.empty()){
+		if(_received_data){
+			if(_cups_pos.empty()){
 
-			for(int i = 0; i < n_cups; i++){
-				cup_xyz = Point3f(x_vec[i], y_vec[i], z_vec[i]);
-				point_dist = sqrt(pow(cup_xyz.x*1000,2) + pow(cup_xyz.y*1000,2) + pow(cup_xyz.z*1000,2));
-				insert_cup_info(cup_ids[i], cup_xyz, point_dist);
-			}
-
-		} else{
-			update_visible_cups(cup_ids);
-			for(int i = 0; i < n_cups; i++){
-				cup_xyz = Point3f(x_vec[i], y_vec[i], z_vec[i]);
-				point_dist = sqrt(pow(cup_xyz.x*1000,2) + pow(cup_xyz.y*1000,2) + pow(cup_xyz.z*1000,2));
-
-				if(_cups_pos.count(cup_ids[i]) == 0){
+				for(int i = 0; i < n_cups; i++){
+					cup_xyz = Point3f(x_vec[i], y_vec[i], z_vec[i]);
+					point_dist = sqrt(pow(cup_xyz.x*1000,2) + pow(cup_xyz.y*1000,2) + pow(cup_xyz.z*1000,2));
 					insert_cup_info(cup_ids[i], cup_xyz, point_dist);
-				} else{
-					dist_it = _cups_dist.find(cup_ids[i]);
+				}
 
-					//If cup's center of mass moves at least 0.5m update with new info
-					if(abs(point_dist - dist_it->second) >= 500){
-						update_cup_info(cup_ids[i], cup_xyz, point_dist);
+			} else{
+				update_visible_cups(cup_ids);
+				for(int i = 0; i < n_cups; i++){
+					cup_xyz = Point3f(x_vec[i], y_vec[i], z_vec[i]);
+					point_dist = sqrt(pow(cup_xyz.x*1000,2) + pow(cup_xyz.y*1000,2) + pow(cup_xyz.z*1000,2));
+
+					if(_cups_pos.count(cup_ids[i]) == 0){
+						insert_cup_info(cup_ids[i], cup_xyz, point_dist);
+					} else{
+						dist_it = _cups_dist.find(cup_ids[i]);
+
+						//If cup's center of mass moves at least 0.5m update with new info
+						if(abs(point_dist - dist_it->second) >= 500){
+							update_cup_info(cup_ids[i], cup_xyz, point_dist);
+						}
 					}
 				}
 			}
@@ -220,7 +225,7 @@ namespace movement_decision{
 					_facial_expression_mng.publish(new_expression);
 					if(_counter_served < 1){
 						new_cue.speech_cue_code = Speech_Interactions::NEXT;
-					}else if(_counter_served > ((int)_cups_pos.size() - 1)){
+					}else if(((int)cups_left.size() - 1) < 1){
 						new_cue.speech_cue_code = Speech_Interactions::LAST_CUP;
 					}else {
 						new_cue.speech_cue_code = Speech_Interactions::NEXT2;
@@ -228,36 +233,51 @@ namespace movement_decision{
 					_speech_cues_mng.publish(new_cue);
 					_counter_served++;
 				}else{
-					if(((int)_cups_pos.size() - (int)_cups_served.size()) > 1){
-						avg_dist_height = 0;
-						for(map<string, Point3f>::iterator it = cups_left.begin(); it != cups_left.end(); it++)
-							avg_dist_height += sqrt(pow(it->second.y, 2) + pow(it->second.z, 2));
-						avg_dist_height = (avg_dist_height / (float)((int)cups_left.size()));
-						if(avg_dist_height > MAX_VERTICAL_HEIGTH || _closer_counter > 2){
-							new_cue.speech_cue_code = Speech_Interactions::RAISE_CUP_MULTI;
-						} else{
-							new_cue.speech_cue_code = Speech_Interactions::COME_CLOSER_MULTI;
-							_closer_counter++;
-						}
+					if(!_received_data){
+						new_cue.speech_cue_code = Speech_Interactions::SMALL_TALK;
+						_speech_cues_mng.publish(new_cue);
+						_log_file << "Small talk." << endl;
+						ROS_INFO("No Cup in Robot's range and no visual data received.");
 					}else {
-						if(sqrt(pow(cups_left.begin()->second.y, 2) + pow(cups_left.begin()->second.z, 2)) > MAX_VERTICAL_HEIGTH)
-							new_cue.speech_cue_code = Speech_Interactions::RAISE_CUP;
-						else if(_closer_counter > 2){
-							if(!_asked_straight){
-								new_cue.speech_cue_code = Speech_Interactions::STRAIGHTEN_CUP;
-								_asked_straight = true;
-							} else {
-								new_cue.speech_cue_code = Speech_Interactions::RAISE_CUP;
+						if(((int)_cups_pos.size() - (int)_cups_served.size()) > 1){
+							avg_dist_height = 0;
+							for(map<string, Point3f>::iterator it = cups_left.begin(); it != cups_left.end(); it++)
+								avg_dist_height += sqrt(pow(it->second.y, 2) + pow(it->second.z, 2));
+							avg_dist_height = (avg_dist_height / (float)((int)cups_left.size()));
+							if(avg_dist_height > MAX_VERTICAL_HEIGTH || _closer_counter > 2){
+								new_cue.speech_cue_code = Speech_Interactions::RAISE_CUP_MULTI;
+								_log_file << "Asked users to raise the cups." << endl;
+							} else{
+								new_cue.speech_cue_code = Speech_Interactions::COME_CLOSER_MULTI;
+								_closer_counter++;
+								_log_file << "Asked users to come closer." << endl;
 							}
-						} else {
-							new_cue.speech_cue_code = Speech_Interactions::COME_CLOSER;
-							_closer_counter++;
+						}else {
+							if(sqrt(pow(cups_left.begin()->second.y, 2) + pow(cups_left.begin()->second.z, 2)) > MAX_VERTICAL_HEIGTH){
+								new_cue.speech_cue_code = Speech_Interactions::RAISE_CUP;
+								_log_file << "Asked last user to raise the cup." << endl;
+							}else if(_closer_counter > 2){
+								if(!_asked_straight){
+									new_cue.speech_cue_code = Speech_Interactions::STRAIGHTEN_CUP;
+									_asked_straight = true;
+									_log_file << "Asked last user to straighten the cup." << endl;
+								} else {
+									new_cue.speech_cue_code = Speech_Interactions::RAISE_CUP;
+									_log_file << "Asked last user to raise the cup." << endl;
+								}
+							} else {
+								new_cue.speech_cue_code = Speech_Interactions::COME_CLOSER;
+								_closer_counter++;
+								_log_file << "Asked last user to come closer." << endl;
+							}
 						}
+						_speech_cues_mng.publish(new_cue);
+						ROS_INFO("No Cup in Robot's range");
 					}
-					_speech_cues_mng.publish(new_cue);
-					ROS_INFO("No Cup in Robot's range");
 				}
 
+
+			//If there's already a selected target
 			} else{
 
 				//Check movement state
@@ -273,11 +293,15 @@ namespace movement_decision{
 
 				if(status_response == actionlib_msgs::GoalStatus::SUCCEEDED){
 					_cup_mov_phase.at(_current_cup_id) = Movement_Stage::MOVEMENT_SUCCESS;
+					_log_file << "Goal Status: Movement was a success." << endl;
 					return;
 				} else if(status_response == actionlib_msgs::GoalStatus::ABORTED){
 					_cup_mov_phase.at(_current_cup_id) = Movement_Stage::MOVEMENT_FAILED;
+					_log_file << "Goal Status: Movement was a failure." << endl;
 					return;
 				} else if(status_response == actionlib_msgs::GoalStatus::ACTIVE){
+
+					_log_file << "Goal Status: Goal is still active." << endl;
 
 					//Verify if there were changes in the cup's position and visibility
 					if(abs(objective_dist - _cups_dist.at(_current_cup_id)) >= 500 &&
@@ -372,6 +396,7 @@ namespace movement_decision{
 					}
 					timeout_counter++;
 				}
+
 				exit(0);
 			}
 		}

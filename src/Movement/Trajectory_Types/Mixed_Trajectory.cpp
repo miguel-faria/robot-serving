@@ -10,7 +10,6 @@
 #include <cmath>
 #include <cstdlib>
 
-
 namespace movement_decision {
 
 	Mixed_Trajectory::~Mixed_Trajectory(){
@@ -49,7 +48,7 @@ namespace movement_decision {
 
 		get_closer_cups(pos_map, point_dist, current_id, cup, dist_closer_cup1, dist_closer_cup2, cup2, cup1);
 
-		if(euclidean_distance(cup, cup1) < 400 && euclidean_distance(cup, cup2) < 400)
+		if (euclidean_distance(cup, cup1) < MAX_CUP_DIST && euclidean_distance(cup, cup2) < MAX_CUP_DIST)
 			return true;
 		else
 			return false;
@@ -65,10 +64,10 @@ namespace movement_decision {
 		get_closer_cups(pos_map, point_dist, current_id, cup, dist_closer_cup1, dist_closer_cup2, cup2, cup1);
 
 		if(arm.compare("left") == 0 || arm.compare("Left") == 0){
-			if((cup1.x < cup.x && euclidean_distance(cup, cup1) <= 400) || (cup2.x < cup.x && euclidean_distance(cup, cup2) <= 400))
+			if ((cup1.x < cup.x && euclidean_distance(cup, cup1) <= MAX_CUP_DIST) || (cup2.x < cup.x && euclidean_distance(cup, cup2) <= MAX_CUP_DIST))
 				return true;
 		} else {
-			if((cup1.x > cup.x && euclidean_distance(cup, cup1) <= 400) || (cup2.x > cup.x && euclidean_distance(cup, cup2) <= 400))
+			if ((cup1.x > cup.x && euclidean_distance(cup, cup1) <= MAX_CUP_DIST) || (cup2.x > cup.x && euclidean_distance(cup, cup2) <= MAX_CUP_DIST))
 				return true;
 		}
 
