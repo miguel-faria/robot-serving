@@ -12,6 +12,8 @@
 #include <ros/service_client.h>
 #include <std_srvs/Empty.h>
 #include <algorithm>
+#include <chrono>
+#include <thread>
 
 #include "../../../devel/include/robot_serving/FollowBehaviour.h"
 #include "../../../devel/include/robot_serving/Movement.h"
@@ -19,6 +21,10 @@
 #include "../../../devel/include/robot_serving/RobotMovementFeedback.h"
 #include "../../../devel/include/robot_serving/RobotMovementSendTrajectory.h"
 #include "../Trajectory_Types/Trajectory_Manager.h"
+
+using namespace this_thread;
+using namespace chrono;
+
 
 namespace movement_decision{
 
@@ -163,7 +169,9 @@ namespace movement_decision{
 		if(_cups_pos.size() > 0){
 
 			//If there is no cup selected or the previous movement has finished
-			if(_current_cup_id.empty() || movement_finished()){
+			if((_current_cup_id.empty() || movement_finished()) && !_moving){
+
+				ROS_INFO("Started Decision");
 
 				new_expression.face_code = Facial_Expressions::LOOKING;
 				_facial_expression_mng.publish(new_expression);
@@ -172,6 +180,7 @@ namespace movement_decision{
 				//Get next cup to serve
 				objective_pos_it = choose_next_cup();
 				if(objective_pos_it != _cups_pos.end()) {
+					_moving = true;
 					_current_cup_id = objective_pos_it->first;
 					_current_objective = objective_pos_it->second;
 
@@ -213,16 +222,16 @@ namespace movement_decision{
 						_cup_mov_phase.at(_current_cup_id) = Movement_Stage::MOVEMENT_SUCCESS;
 						_current_cup_id = string();
 						_current_objective = Point3f();
-						new_expression.face_code = Facial_Expressions::SUCCEEDED;
+						//new_expression.face_code = Facial_Expressions::SUCCEEDED;
 						ROS_INFO("Changing facial expression to Very Happy!");
 					}else if(movement_result == Movement_Result::ABORTED || movement_result == Movement_Result::PREEMPTED){
 						_cup_mov_phase.at(_current_cup_id) = Movement_Stage::MOVEMENT_FAILED;
 						_current_cup_id = string();
 						_current_objective = Point3f();
-						new_expression.face_code = Facial_Expressions::SAD;
+						//new_expression.face_code = Facial_Expressions::SAD;
 						ROS_INFO("Changing facial expression to Sad!");
 					}
-					_facial_expression_mng.publish(new_expression);
+					//_facial_expression_mng.publish(new_expression);
 					if(_counter_served < 1){
 						new_cue.speech_cue_code = Speech_Interactions::NEXT;
 					}else if(((int)cups_left.size() - 1) < 1){
@@ -232,7 +241,10 @@ namespace movement_decision{
 					}
 					_speech_cues_mng.publish(new_cue);
 					_counter_served++;
+					std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+					_moving = false;
 				}else{
+					_moving = true;
 					if(!_received_data){
 						new_cue.speech_cue_code = Speech_Interactions::SMALL_TALK;
 						_speech_cues_mng.publish(new_cue);
@@ -273,6 +285,7 @@ namespace movement_decision{
 						}
 						_speech_cues_mng.publish(new_cue);
 						ROS_INFO("No Cup in Robot's range");
+						_moving = false;
 					}
 				}
 
@@ -315,7 +328,7 @@ namespace movement_decision{
 						restart_srv.request.limb = _baxter_limb;
 						restart_srv.request.service_code = CANCEL_MOVEMENT;
 						if(_traj_manager->get_restart_traj_serv().call(restart_srv)){
-
+							_moving = true;
 							ROS_INFO("%f\t%f", VERTICAL_DISPLACEMENT, DEPTH_DISPLACEMENT);
 
 							//Find new target and start movement
@@ -362,6 +375,7 @@ namespace movement_decision{
 								new_expression.face_code = Facial_Expressions::SAD;
 							}
 							_facial_expression_mng.publish(new_expression);
+							_moving = false;
 						}else{
 							ROS_ERROR("Failed to call service to cancel movement.\n");
 						}
