@@ -115,7 +115,7 @@ class HybridTrajectoryServer(object):
 		new_o = np.vstack(target)
 
 		rospy.loginfo("Creating legible COPMP")
-		copmp = CoProMP(self._legible_O, self._legible_Y, 3, 7, o_dt=1, dt=0.001, Sigma_y=None)
+		copmp = CoProMP(self._legible_O, self._legible_Y, 3, 7, o_dt=1, dt=0.0001, Sigma_y=None)
 		copmp.build(linear_phase, lambda z, dt: normalized_gaussian_basis(2, z, dt),
 					linear_phase, lambda z, dt: normalized_gaussian_basis(10, z, dt))
 		rospy.loginfo("COPMP created")
@@ -156,7 +156,7 @@ class HybridTrajectoryServer(object):
 		right_traj = ymp[:, 1:7 + 1]
 
 		rospy.loginfo("Executing predictable trajectory")
-		te = TrajectoryExecutor(time, 10, None, right_traj)
+		te = TrajectoryExecutor(time, 8.5, None, right_traj)
 		te.execute()
 
 		rospy.loginfo("Predictable trajectory executed")

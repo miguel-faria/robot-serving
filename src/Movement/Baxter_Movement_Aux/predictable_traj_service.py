@@ -114,7 +114,7 @@ class PredictTrajectoryServer(object):
 		right_traj = ymp[:, 1:7 + 1]
 
 		rospy.loginfo("Executing predictable trajectory")
-		te = TrajectoryExecutor(time, 10, None, right_traj)
+		te = TrajectoryExecutor(time, 8.5, None, right_traj)
 		te.execute()
 
 		rospy.loginfo("Predictable trajectory executed")

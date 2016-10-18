@@ -16,4 +16,4 @@ StartMovSrv="baxter_start_trajectory"
 FeedbackSrv="baxter_movement_feedback"
 RestartMovSrv="baxter_stop_start_trajectory"
 BaxterArm="right"
-DecisionPeriod=23
+DecisionPeriod=8

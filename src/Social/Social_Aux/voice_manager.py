@@ -66,7 +66,8 @@ class VoiceManager:
 
         # Espeak in-line command parameter settings
         # self.espeak_str = " espeak -s 175 -p 90 -g 10 "
-        self.espeak_str = " espeak -v pt-pt -p 80 -g 5 -s 145 "
+        # self.espeak_str = " espeak -v pt-pt -p 90 -a 75 -s 190 "
+        self.espeak_str = " espeak -v mb-en1 -p 85 -a 185 -s 145 -g 2 "
 
         # Service setup
         self.t = rospy.Service('/bea/speak', speak_req, self.speakEmotion)
@@ -124,9 +125,9 @@ class VoiceManager:
 
     def chooseGoodbye(self):
 
-        sentences = ["Até à próxima!",
-                     "Gostei de vocês, vemo-nos noutra vez!",
-                     "Por agora é tudo, até depois!"]
+        sentences = ["See you next time!",
+                     "I loved you guys, 'till next time.",
+                     "It's all for now, see you later."]
 
         self.string = sentences[random.randrange(len(sentences))]
 
@@ -178,6 +179,7 @@ class VoiceManager:
 
     def choose_cup_filling_greeting(self, greeting_code):
 
+        """
         greetings = {
             1: ["Olá, o meu nome é " + "\"" + "; espeak -v en-us -p 90 -g 15 -s 145 \"" + "Baxter" + "\"" +
                 "; espeak -v pt-pt -p 90 -g 15 -s 145 \" e hoje vou servir-vos água.",
@@ -187,6 +189,18 @@ class VoiceManager:
                 "De volta!? Estou a ver que só um copo não vos chegou, eu encho-vos outro."],
             3: ["Querem mais!? Vocês gostaram mesmo de mim! Então vá dêem cá esses copos.",
                 "Mais!? Onde põe vocês essa água? Vamos lá, não vos posso deixar com sede!"]
+        }
+        """
+
+        greetings = {
+            1: ["Olá, o meu nome é " + "\"" + "; espeak -v en-us -p 90 -g 15 -s 145 \"" + "Baxter" + "\"" +
+                "; espeak -v pt-pt -p 90 -g 15 -s 145 \" e hoje vou servir-vos água.",
+                "Olá, sou u " + "\"" + "; espeak -v en-us -p 90 -g 15 -s 145 \"" + "Baxter" + "\"" +
+                "; espeak -v pt-pt -p 90 -g 15 -s 145 \" e vou ser o vosso bartendarr hoje"],
+            2: ["Still thirsty?? I get it... it has been hot... I'll serve you another one.",
+                "Again? I see one wasn't enough. I'll give you another one!"],
+            3: ["Want more? You really liked me! Come here, I'll give you more.",
+                "More? Where do you put all that water?? I'll pour you another one."]
         }
 
         self.string = greetings[greeting_code][random.randrange(len(greetings[greeting_code]))]

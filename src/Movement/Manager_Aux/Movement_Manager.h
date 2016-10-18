@@ -44,8 +44,8 @@ namespace movement_decision {
 #define RESTART_MOVEMENT 		2
 #define MAX_TIME_OFF_FRAME  	5
 #define MAX_REACH				1500
-#define VERTICAL_DISPLACEMENT	0.075
-#define DEPTH_DISPLACEMENT		-0.05
+#define VERTICAL_DISPLACEMENT	0.0
+#define DEPTH_DISPLACEMENT		-0.035
 #define MAX_VERTICAL_HEIGTH		1.3
 
 	class MovementManager {
@@ -89,6 +89,7 @@ namespace movement_decision {
 			bool _received_data = false;
 			bool _can_start = false;
 			bool _asked_straight = false;
+			bool _moving = false;
 
 			int _closer_counter = 0;
 			int _counter_served = 0;

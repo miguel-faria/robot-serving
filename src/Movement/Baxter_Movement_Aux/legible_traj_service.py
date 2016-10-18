@@ -98,7 +98,7 @@ class LegibleTrajectoryServer(object):
 		new_o = np.vstack(target)
 
 		rospy.loginfo("Creating COPMP")
-		copmp = CoProMP(self._O, self._Y, 3, 7, o_dt=1, dt=0.001, Sigma_y=None)
+		copmp = CoProMP(self._O, self._Y, 3, 7, o_dt=1, dt=0.0001, Sigma_y=None)
 		copmp.build(linear_phase, lambda z, dt: normalized_gaussian_basis(2, z, dt),
 					linear_phase, lambda z, dt: normalized_gaussian_basis(10, z, dt))
 		rospy.loginfo("COPMP created")

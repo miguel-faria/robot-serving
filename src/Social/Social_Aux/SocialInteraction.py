@@ -26,17 +26,17 @@ class SpeechCodes(object):
 
 
 class SocialInteraction(object):
-
 	def __init__(self, interaction_number):
 
-		self.interaction_number = interaction_number
+		self._interaction_number = interaction_number
 		self._limbs = {
 			'right': baxter_interface.Limb('right'),
 			'left': baxter_interface.Limb('left')
 		}
 		self._finished = False
 		self._finish_signal_service = rospy.Service('finish_interaction_server', Empty, self.handle_finish_signal)
-		self._facial_expression_mng = rospy.Subscriber('facial_expression_mng', ManageExpression, self._change_expression)
+		self._facial_expression_mng = rospy.Subscriber('facial_expression_mng', ManageExpression,
+													   self._change_expression)
 		self._speech_interaction_mng = rospy.Subscriber('speech_cues_mng', SpeechCues, self._speech_interact)
 
 		self._scene_manager = PerceptionReactor()
@@ -75,39 +75,45 @@ class SocialInteraction(object):
 		interact_code = msg.speech_cue_code
 
 		interactions = {
-			SpeechCodes.RAISE_CUP: ["Por favor, levanta o copo.", "Levanta um pouco o copo",
-									"O copo está muito baixo, pdoias levantar ligeiramente?"],
-			SpeechCodes.COME_CLOSER: ["Por favor, aproxima mais o copo.",
-									  "Não tenhas medo que não mordo, chega mais o copo.",
-									  "Estás muito longe e não consigo chegar, põe o copo mais próximo."],
-			SpeechCodes.STRAIGHTEN_CUP: ["Por favor, endireita o copo.",
-										 "Podias pôr o copo direito? Assim ainda entorno",
-										 "Endireita um pouco o copo, se puderes."],
-			SpeechCodes.RAISE_CUP_MULTI: ["Pedia-vos que levantassem um pouco os copos.",
-										  "Levantem ligeiramente os copos, por favor.",
-										  "Não chego aos vossos copos, levantem-nos um pouco por favor."],
-			SpeechCodes.COME_CLOSER_MULTI: ["Vocês estão tão longe! Podiam aproximar os copos?",
-											"Por favor aproximem-se, que eu assim não chego aos copos.",
-											"Não chego os copos, podiam aproximá-los de mim?"],
-			SpeechCodes.NEXT: ["Pronto! Este já era, venha o próximo!", "Um copinho de água fresquinha bem cheiinho!",
-							   "Já está! Para quem vai ser o próximo?"],
-			SpeechCodes.NEXT2: ["Mais um bem cheio, adoro este trabalho!", "Outro já cheio! Para quem vai ser o próximo?",
-								"E lá vai outro... com vocês isto vai bem depréssa!"],
-			SpeechCodes.LAST_CUP: ["Pronto! Lá foi mais um.", "Ah! Este foi fácil, obrigado por colaborares!",
-								   "Outro cheio, estou a apanhar o jeito a esta coisa."],
-			SpeechCodes.SMALL_TALK: ["Então, contem lá, já tinham trabalhado com algum robô?",
-									 "Enquanto estão aqui, posso perguntar-vos como está hoje o dia?" +
-									 " É que não consigo ver lá para fora.",
-									 "Desculpem estar a demorar, mas eu hoje estou um pouco cansado..."]
+			SpeechCodes.RAISE_CUP: ["Please, raise your cup.", "Raise the cup a little, please.",
+									"The cuup is too low. Could you raise it a littlee?"],
+			SpeechCodes.COME_CLOSER: ["Please, get the cup closer.",
+									  "Don't be scared, I don't bite! Come closer.",
+									  "You're too far... Could you put the cup closer?"],
+			SpeechCodes.STRAIGHTEN_CUP: ["Please, straighten the cup",
+										 "Could you get the cup straight?",
+										 "If you can, straighten the cup."],
+			SpeechCodes.RAISE_CUP_MULTI: ["Could you raise your cupps?",
+										  "Please, raise your cupps a littlee.",
+										  "I can't reach your cups. Raise them a little."],
+			SpeechCodes.COME_CLOSER_MULTI: ["You're too far... Could you get the cups closer?",
+											"Please come closer, I can't reach the cups.",
+											"I can't reach the cupps, could you get them closer?"],
+			SpeechCodes.NEXT: ["Done! Who's next?",
+							   "A cup of fresh water all filled up!",
+							   "One's down! Who's going to be next?"],
+			SpeechCodes.NEXT2: ["Another one filled. God! I love this job!",
+								"Another one, Who's next?",
+								"There goes another one, with you guys this goes fast."],
+			SpeechCodes.LAST_CUP: ["Ready! There goes another.",
+								   "This was easy! Thanks for collaborating.",
+								   "Another one filled, I'm getting good at this!"],
+			SpeechCodes.SMALL_TALK: ["Tell me.. Have you ever worked with a robot before?",
+									 "How's the day today?",
+									 "Sorry for taking so long, I'm a bit tired today..."]
 		}
 
 		if interact_code in interactions:
 			self._log_file.write("Received speech interaction code: " + str(interact_code) + "\n")
-			self._voice_manager.speakString(interactions[interact_code][random.randrange(len(interactions[interact_code]))])
+			self._voice_manager.speakString(
+					interactions[interact_code][random.randrange(len(interactions[interact_code]))])
 		else:
 			rospy.loginfo('Invalid speech interaction code.')
 			self._log_file.write("Received invalid speech interaction code: " + str(interact_code) + "\n")
 			return
+
+	def interaction_number(self):
+		return self._interaction_number
 
 	def happy_face(self):
 		self._scene_manager.screen_mode(screen_mode.HAPPY)
@@ -138,28 +144,31 @@ class SocialInteraction(object):
 		self._scene_manager.convert_and_publish_image()
 
 	def looking_face(self):
-		self._scene_manager.screen_mode(screen_mode.NERVOUS)
+		self._scene_manager.screen_mode(screen_mode.HAPPY)
 		self._scene_manager.follow_mode(FollowBehaviour.FOLLOW_RANDOM_LOOK, '')
 		self._scene_manager.clean_face()
-		self._scene_manager.delicate_face()
+		self._scene_manager.happy_face()
 		self._scene_manager.convert_and_publish_image()
 
 	def hello(self):
 		self.happy_face()
-		self._voice_manager.choose_cup_filling_greeting(self.interaction_number)
-		#self.wave_hello()
-		self._voice_manager.speakString()
+		if self._interaction_number == 1:
+			self._voice_manager.speakString("Hey! I'm Baxter and today I'm going to serve you water.")
+		else:
+			self._voice_manager.choose_cup_filling_greeting(self._interaction_number)
+			self._voice_manager.speakString()
+		# self.wave_hello()
 		time.sleep(1)
-		self.neutral_face()
 		self.move_neutral()
 
 	def goodbye(self):
-		#self.wave_goodbye()
+		# self.wave_goodbye()
 		time.sleep(1)
 		self.happy_face()
 		self.move_neutral()
-		self._voice_manager.chooseGoodbye()
-		self._voice_manager.speakString()
+		if self._interaction_number == 3:
+			self._voice_manager.chooseGoodbye()
+			self._voice_manager.speakString()
 		time.sleep(2)
 		self._scene_manager.sleep_face()
 		self._scene_manager.convert_and_publish_image()
@@ -230,9 +239,11 @@ class SocialInteraction(object):
 				  'left_e0': -2.165213879626465, 'left_e1': 1.8430779145385743, 'left_s0': -0.09127185677490235,
 				  'left_s1': 0.2086213869140625}
 
-		wave_2 = {'left_w0': -1.5604419546936037, 'left_w1': 1.3844176594848634, 'left_w2': 0.38426218692626957, 'left_e0': -2.5000051861999513, 'left_e1': 0.7094661135864259, 'left_s0': -0.10200972227783203, 'left_s1': 0.14879613625488283}
+		wave_2 = {'left_w0': -1.5604419546936037, 'left_w1': 1.3844176594848634, 'left_w2': 0.38426218692626957,
+				  'left_e0': -2.5000051861999513, 'left_e1': 0.7094661135864259, 'left_s0': -0.10200972227783203,
+				  'left_s1': 0.14879613625488283}
 
-		#self.raise_arm()
+		# self.raise_arm()
 		for _move in range(3):
 			self._limbs['left'].move_to_joint_positions(wave_1)
 			self._limbs['left'].move_to_joint_positions(wave_2)
